@@ -25,9 +25,9 @@ const OfertaCard = ({ oferta }) => {
           />
           
           {/* Badge de descuento */}
-          <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full font-bold shadow-lg">
-            {oferta.porcentaje_descuento}% OFF
-          </div>
+<div className="absolute top-3 right-3 bg-red-600 text-white px-4 py-2 font-bold shadow-lg border-4 border-white rounded-lg transform -rotate-6">
+  {oferta.porcentaje_descuento}% OFF
+</div>
 
           {/* Badge de cupones limitados */}
           {oferta.cantidad_limite && oferta.cupones_disponibles < 20 && (

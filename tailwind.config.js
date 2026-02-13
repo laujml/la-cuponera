@@ -30,7 +30,11 @@ export default {
           700: '#92400e',
           800: '#78350f',
           900: '#451a03',
-        }
+        },
+        background: '#F9FAFB',
+      },
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'],
       },
     },
   },
