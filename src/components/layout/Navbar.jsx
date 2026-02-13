@@ -1,0 +1,108 @@
+import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { FiUser, FiChevronDown } from 'react-icons/fi'
+
+const Navbar = () => {
+  const [perfilOpen, setPerfilOpen] = useState(false)
+
+  return (
+    <nav className="bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center py-4">
+          
+          {/* Logo - Click lleva al inicio */}
+          <Link to="/" className="flex items-center space-x-3 hover:opacity-90 transition">
+            <img 
+              src="/Cuponera-sin fondo.png" 
+              alt="La Cuponera" 
+              className="h-20 w-auto"
+            />
+          </Link>
+
+          {/* Buscador (centro) */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <input
+              type="text"
+              placeholder="Buscar ofertas..."
+              className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            />
+          </div>
+
+          {/* Navegación (derecha) */}
+          <div className="flex items-center space-x-6">
+            
+            
+            {/* Botón Mis cupones */}
+            <Link 
+              to="/mis-cupones" 
+              className="text-white hover:text-orange-200 transition font-medium"
+            >
+              Mis cupones
+            </Link>
+
+            {/* Botón Carrito */}
+            <Link 
+              to="/carrito" 
+              className="text-white hover:text-orange-200 transition font-medium"
+            >
+              Carrito
+            </Link>
+            
+            {/* Dropdown Perfil */}
+            <div className="relative">
+              <button 
+                onClick={() => setPerfilOpen(!perfilOpen)}
+                className="flex items-center space-x-2 text-white hover:text-orange-200 transition font-medium"
+              >
+                <FiUser className="text-xl" />
+                <span>Perfil</span>
+                <FiChevronDown className={`transition-transform ${perfilOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown menu */}
+              {perfilOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50">
+                  <Link 
+                    to="/perfil" 
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                    onClick={() => setPerfilOpen(false)}
+                  >
+                    Ver perfil
+                  </Link>
+                  <Link 
+                    to="/historial" 
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                    onClick={() => setPerfilOpen(false)}
+                  >
+                    Historial de compras
+                  </Link>
+                  <button 
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                    onClick={() => {
+                      setPerfilOpen(false)
+                      // P2 agrega la lógica de cerrar sesión
+                      alert('Función de cerrar sesión pendiente')
+                    }}
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Buscador Mobile */}
+        <div className="md:hidden pb-3">
+          <input
+            type="text"
+            placeholder="Buscar ofertas..."
+            className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          />
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+export default Navbar
