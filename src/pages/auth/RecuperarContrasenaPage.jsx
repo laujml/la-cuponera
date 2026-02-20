@@ -1,30 +1,28 @@
-// src/pages/auth/RecuperarContrasenaPage.jsx
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { recuperarContrasena } from '../../services/authService'
-import { useForm } from '../../hooks/useForm'
 import { FiMail, FiArrowLeft, FiCheck } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
 const RecuperarContrasenaPage = () => {
+  const [email, setEmail] = useState('')
   const [enviado, setEnviado] = useState(false)
   const [cargando, setCargando] = useState(false)
 
-  const { valores, errores, handleChange, validar } = useForm(
-    { email: '' },
-    { email: { requerido: true, email: true } }
-  )
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validar()) return
+    
+    if (!email.trim()) {
+      toast.error('Ingresa tu correo electrónico')
+      return
+    }
 
     setCargando(true)
-    const { error } = await recuperarContrasena(valores.email)
+    const { error } = await recuperarContrasena(email)
     setCargando(false)
 
     if (error) {
-      toast.error('No se pudo enviar el correo. Intenta de nuevo.')
+      toast.error('Error al enviar el correo')
       return
     }
 
@@ -35,15 +33,20 @@ const RecuperarContrasenaPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8 text-center">
-          <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
             <FiCheck className="text-green-600 text-3xl" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Correo enviado!</h2>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">¡Correo enviado!</h1>
           <p className="text-gray-600 mb-6">
-            Revisa tu bandeja de entrada en <strong>{valores.email}</strong> para recuperar tu contraseña.
+            Revisa tu bandeja de entrada en <strong>{email}</strong>. 
+            Sigue las instrucciones para restablecer tu contraseña.
           </p>
-          <Link to="/login" className="text-orange-600 font-medium hover:text-orange-700">
-            Volver al inicio de sesión
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium"
+          >
+            <FiArrowLeft />
+            Volver al login
           </Link>
         </div>
       </div>
@@ -54,12 +57,16 @@ const RecuperarContrasenaPage = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <img src="/Cuponera-sin fondo.png" alt="La Cuponera" className="h-16 mx-auto mb-4" />
+          <Link to="/">
+            <img src="/Cuponera-sin fondo.png" alt="La Cuponera" className="h-14 mx-auto mb-4" />
+          </Link>
           <h1 className="text-2xl font-bold text-gray-800">Recuperar contraseña</h1>
-          <p className="text-gray-500 text-sm mt-1">Te enviaremos un enlace para restablecer tu contraseña</p>
+          <p className="text-gray-500 text-sm mt-1">
+            Te enviaremos un enlace para restablecer tu contraseña
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Correo electrónico
@@ -68,31 +75,33 @@ const RecuperarContrasenaPage = () => {
               <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="email"
-                name="email"
-                value={valores.email}
-                onChange={handleChange}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="correo@ejemplo.com"
-                className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${
-                  errores.email ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
-            {errores.email && <p className="text-red-500 text-xs mt-1">{errores.email}</p>}
           </div>
 
           <button
             type="submit"
             disabled={cargando}
-            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition disabled:opacity-60"
+            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {cargando ? 'Enviando...' : 'Enviar enlace'}
+            {cargando ? (
+              <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+            ) : (
+              'Enviar enlace'
+            )}
           </button>
         </form>
 
-        <Link to="/login" className="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 mt-6">
-          <FiArrowLeft size={14} />
-          Volver al inicio de sesión
-        </Link>
+        <p className="text-center text-sm text-gray-600 mt-6">
+          <Link to="/login" className="text-orange-600 hover:text-orange-700 flex items-center justify-center gap-1">
+            <FiArrowLeft size={14} />
+            Volver al login
+          </Link>
+        </p>
       </div>
     </div>
   )
