@@ -3,17 +3,16 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from '../../hooks/useForm'
 import { iniciarSesion } from '../../services/authService'
-import { FiMail, FiLock, FiLogIn, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
 const LoginPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const [mostrarPassword, setMostrarPassword] = useState(false)
-  const [cargando, setCargando] = useState(false)
+  const from = location.state?.from?.pathname || '/'
 
-  // Redirect to where user was trying to go, or home
-  const destino = location.state?.from?.pathname || '/'
+  const [mostrarPassword, setMostrarPassword] = useState(false)
+  const [enviando, setEnviando] = useState(false)
 
   const { valores, errores, handleChange, validar } = useForm(
     { email: '', password: '' },
@@ -27,37 +26,44 @@ const LoginPage = () => {
     e.preventDefault()
     if (!validar()) return
 
-    setCargando(true)
+    setEnviando(true)
     const { error } = await iniciarSesion(valores)
-    setCargando(false)
+    setEnviando(false)
 
     if (error) {
-      // Translate common Supabase error messages
-      const msg = error.message.includes('Invalid login credentials')
-        ? 'Email o contraseña incorrectos'
-        : error.message
-      toast.error(msg)
+      if (error.message.includes('Invalid login')) {
+        toast.error('Correo o contraseña incorrectos')
+      } else {
+        toast.error(error.message || 'Error al iniciar sesión')
+      }
       return
     }
 
     toast.success('¡Bienvenido!')
-    navigate(destino, { replace: true })
+    navigate(from, { replace: true })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
-
+    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-orange-500 to-red-500 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        
         {/* Header */}
-        <div className="text-center mb-8">
-          <img src="/Cuponera-sin fondo.png" alt="La Cuponera" className="h-16 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800">Iniciar sesión</h1>
-          <p className="text-gray-500 text-sm mt-1">Accede a tus cupones y ofertas</p>
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white text-center">
+          <Link to="/" className="absolute left-4 top-4 text-white/80 hover:text-white">
+            <FiArrowLeft className="text-xl" />
+          </Link>
+          <img 
+            src="/Cuponera-sin fondo.png" 
+            alt="La Cuponera" 
+            className="h-16 mx-auto mb-2"
+          />
+          <h1 className="text-2xl font-bold">Bienvenido</h1>
+          <p className="text-orange-100 text-sm">Ingresa a tu cuenta</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} noValidate className="space-y-5">
-
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -70,13 +76,15 @@ const LoginPage = () => {
                 name="email"
                 value={valores.email}
                 onChange={handleChange}
-                placeholder="correo@ejemplo.com"
+                placeholder="tu@email.com"
                 className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${
                   errores.email ? 'border-red-400' : 'border-gray-300'
                 }`}
               />
             </div>
-            {errores.email && <p className="text-red-500 text-xs mt-1">{errores.email}</p>}
+            {errores.email && (
+              <p className="text-red-500 text-xs mt-1">{errores.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -92,7 +100,7 @@ const LoginPage = () => {
                 value={valores.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-10 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${
+                className={`w-full pl-10 pr-12 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${
                   errores.password ? 'border-red-400' : 'border-gray-300'
                 }`}
               />
@@ -104,12 +112,17 @@ const LoginPage = () => {
                 {mostrarPassword ? <FiEyeOff /> : <FiEye />}
               </button>
             </div>
-            {errores.password && <p className="text-red-500 text-xs mt-1">{errores.password}</p>}
+            {errores.password && (
+              <p className="text-red-500 text-xs mt-1">{errores.password}</p>
+            )}
           </div>
 
           {/* Forgot password */}
           <div className="text-right">
-            <Link to="/recuperar-contrasena" className="text-sm text-orange-600 hover:text-orange-700">
+            <Link 
+              to="/recuperar-contrasena" 
+              className="text-sm text-orange-600 hover:underline"
+            >
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
@@ -117,27 +130,27 @@ const LoginPage = () => {
           {/* Submit */}
           <button
             type="submit"
-            disabled={cargando}
-            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2 disabled:opacity-60"
+            disabled={enviando}
+            className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold hover:bg-orange-600 transition disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            {cargando ? (
-              <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-            ) : (
+            {enviando ? (
               <>
-                <FiLogIn />
-                Ingresar
+                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                Ingresando...
               </>
+            ) : (
+              'Ingresar'
             )}
           </button>
-        </form>
 
-        {/* Register link */}
-        <p className="text-center text-sm text-gray-600 mt-6">
-          ¿No tienes cuenta?{' '}
-          <Link to="/registro" className="text-orange-600 font-medium hover:text-orange-700">
-            Regístrate gratis
-          </Link>
-        </p>
+          {/* Register link */}
+          <p className="text-center text-sm text-gray-600">
+            ¿No tienes cuenta?{' '}
+            <Link to="/registro" className="text-orange-600 font-semibold hover:underline">
+              Regístrate aquí
+            </Link>
+          </p>
+        </form>
       </div>
     </div>
   )

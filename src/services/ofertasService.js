@@ -1,7 +1,13 @@
-// src/services/ofertasService.js
+
 import { supabase } from '../config/supabaseClient'
 
-// Obtener todas las ofertas activas
+/**
+ * Obtener todas las ofertas activas
+ * Usa la vista ofertas_activas que filtra automáticamente por:
+ * - estado = 'aprobada'
+ * - fecha dentro del rango válido
+ * - stock disponible
+ */
 export const getOfertasActivas = async () => {
   try {
     const { data, error } = await supabase
@@ -17,7 +23,9 @@ export const getOfertasActivas = async () => {
   }
 }
 
-// Obtener ofertas filtradas por rubro
+/**
+ * Obtener ofertas filtradas por rubro
+ */
 export const getOfertasPorRubro = async (rubroId) => {
   try {
     const { data, error } = await supabase
@@ -34,7 +42,9 @@ export const getOfertasPorRubro = async (rubroId) => {
   }
 }
 
-// Obtener una oferta específica por ID
+/**
+ * Obtener una oferta específica por ID
+ */
 export const getOfertaPorId = async (id) => {
   try {
     const { data, error } = await supabase
@@ -51,7 +61,9 @@ export const getOfertaPorId = async (id) => {
   }
 }
 
-// Obtener todos los rubros
+/**
+ * Obtener todos los rubros activos
+ */
 export const getRubros = async () => {
   try {
     const { data, error } = await supabase
@@ -68,7 +80,9 @@ export const getRubros = async () => {
   }
 }
 
-// Buscar ofertas por texto
+/**
+ * Buscar ofertas por texto
+ */
 export const buscarOfertas = async (searchText) => {
   try {
     const { data, error } = await supabase
@@ -81,6 +95,25 @@ export const buscarOfertas = async (searchText) => {
     return { data, error: null }
   } catch (error) {
     console.error('Error al buscar ofertas:', error)
+    return { data: null, error }
+  }
+}
+
+/**
+ * Obtener ofertas destacadas (más vendidas o con mayor descuento)
+ */
+export const getOfertasDestacadas = async (limite = 6) => {
+  try {
+    const { data, error } = await supabase
+      .from('ofertas_activas')
+      .select('*')
+      .order('porcentaje_descuento', { ascending: false })
+      .limit(limite)
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    console.error('Error al obtener ofertas destacadas:', error)
     return { data: null, error }
   }
 }

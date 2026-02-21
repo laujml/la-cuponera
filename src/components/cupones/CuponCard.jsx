@@ -30,7 +30,7 @@ const CuponCard = ({ cupon }) => {
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-md overflow-hidden border ${
+    <div className={`bg-white rounded-xl shadow-md overflow-hidden border transition-all hover:shadow-lg ${
       estaActivo ? 'border-green-200' : 'border-gray-200 opacity-80'
     }`}>
       
@@ -42,11 +42,11 @@ const CuponCard = ({ cupon }) => {
           className="w-full h-full object-cover"
         />
         {/* Discount ribbon */}
-        <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+        <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow">
           {oferta?.porcentaje_descuento}% OFF
         </div>
         {/* Status badge */}
-        <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${config.clase}`}>
+        <div className={`absolute top-2 right-2 flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full shadow ${config.clase}`}>
           {config.icono}
           {config.label}
         </div>
@@ -54,9 +54,9 @@ const CuponCard = ({ cupon }) => {
 
       {/* Coupon bottom – perforated line effect */}
       <div className="relative">
-        <div className="absolute -top-3 left-0 right-0 flex justify-between px-3">
-          {[...Array(12)].map((_, i) => (
-            <div key={i} className="w-5 h-5 bg-gray-50 rounded-full border border-gray-200" />
+        <div className="absolute -top-3 left-0 right-0 flex justify-between px-2">
+          {[...Array(14)].map((_, i) => (
+            <div key={i} className="w-4 h-4 bg-gray-50 rounded-full border border-gray-200" />
           ))}
         </div>
       </div>
@@ -85,18 +85,16 @@ const CuponCard = ({ cupon }) => {
         <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
           <div>
             <span className="line-through text-gray-400">${oferta?.precio_regular?.toFixed(2)}</span>
-            <span className="ml-2 font-bold text-red-600 text-sm">
+            <span className="ml-2 font-bold text-green-600 text-sm">
               ${cupon.precio_pagado?.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <FiCalendar className="text-orange-400" />
             <span>
-              Válido hasta{' '}
               {new Date(cupon.fecha_vencimiento).toLocaleDateString('es-ES', {
                 day: 'numeric',
                 month: 'short',
-                year: 'numeric',
               })}
             </span>
           </div>
@@ -106,7 +104,7 @@ const CuponCard = ({ cupon }) => {
         {estaActivo && (
           <button
             onClick={handleDescargar}
-            className="w-full flex items-center justify-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 text-sm font-medium py-2 rounded-lg hover:bg-orange-100 transition"
+            className="w-full flex items-center justify-center gap-2 bg-orange-500 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-orange-600 transition shadow-sm"
           >
             <FiDownload />
             Descargar cupón
@@ -114,10 +112,20 @@ const CuponCard = ({ cupon }) => {
         )}
 
         {cupon.estado === 'canjeado' && cupon.fecha_canje && (
-          <p className="text-center text-xs text-gray-400">
-            Canjeado el{' '}
-            {new Date(cupon.fecha_canje).toLocaleDateString('es-ES')}
-          </p>
+          <div className="text-center py-2 bg-gray-50 rounded-lg">
+            <p className="text-xs text-gray-500">
+              ✓ Canjeado el{' '}
+              {new Date(cupon.fecha_canje).toLocaleDateString('es-ES')}
+            </p>
+          </div>
+        )}
+
+        {cupon.estado === 'vencido' && (
+          <div className="text-center py-2 bg-red-50 rounded-lg">
+            <p className="text-xs text-red-500">
+              Este cupón ha expirado
+            </p>
+          </div>
         )}
       </div>
     </div>

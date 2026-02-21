@@ -1,12 +1,14 @@
-// src/services/cuponesService.js
+
 import { supabase } from '../config/supabaseClient'
 
-/**
- * Fetch all coupons for the logged-in client, newest first.
- * We join oferta data to show relevant info.
- */
 export const getMisCupones = async () => {
   try {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('Usuario no autenticado')
+    }
+
     const { data, error } = await supabase
       .from('cupones')
       .select(`
@@ -21,53 +23,113 @@ export const getMisCupones = async () => {
           id,
           titulo,
           imagen_url,
-          empresa_nombre,
           precio_regular,
-          precio_oferta,
-          porcentaje_descuento
+          porcentaje_descuento,
+          otros_detalles,
+          empresa:empresa_id (
+            nombre,
+            direccion
+          )
         )
       `)
+      .eq('cliente_id', user.id)
       .order('fecha_compra', { ascending: false })
 
     if (error) throw error
-    return { data, error: null }
+
+    // Transformar datos para compatibilidad con el componente
+    const cuponesTransformados = (data || []).map(cupon => ({
+      ...cupon,
+      oferta: cupon.oferta ? {
+        ...cupon.oferta,
+        empresa_nombre: cupon.oferta.empresa?.nombre || 'Empresa',
+        empresa_direccion: cupon.oferta.empresa?.direccion || ''
+      } : null
+    }))
+
+    return { data: cuponesTransformados, error: null }
   } catch (error) {
     console.error('Error al obtener cupones:', error)
     return { data: null, error }
   }
 }
 
-/**
- * Purchase a coupon for a specific offer.
- * This runs inside a transaction-like flow:
- *   1. Verify offer is still available
- *   2. Decrement cupones_disponibles
- *   3. Create compra record
- *   4. Create cupon record with unique code
- */
-export const comprarCupon = async ({ ofertaId, clienteId, precioOferta, empresaPrefijo, fechaLimiteUso }) => {
+
+export const comprarCupon = async ({ ofertaId, precioOferta }) => {
   try {
-    // Step 1: Check availability (RLS-safe)
+    // Verificar autenticación
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('Debes iniciar sesión para comprar un cupón')
+    }
+
+    // Llamar al stored procedure que maneja la transacción atómica
+    const { data, error } = await supabase.rpc('comprar_cupon', {
+      p_oferta_id: ofertaId,
+      p_cliente_id: user.id,
+      p_precio_pagado: precioOferta
+    })
+
+    if (error) {
+      // Traducir errores comunes
+      if (error.message.includes('agotados') || error.message.includes('disponibles')) {
+        throw new Error('Lo sentimos, esta oferta ya no tiene cupones disponibles.')
+      }
+      if (error.message.includes('vigente') || error.message.includes('activa')) {
+        throw new Error('Esta oferta ya no está vigente.')
+      }
+      throw error
+    }
+
+    return { data, error: null }
+  } catch (error) {
+    console.error('Error al comprar cupón:', error)
+    return { data: null, error }
+  }
+}
+
+
+export const comprarCuponDirecto = async ({ ofertaId, precioOferta, empresaNombre, fechaLimiteUso }) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('Debes iniciar sesión para comprar un cupón')
+    }
+
+    // Step 1: Verificar disponibilidad y bloquear la oferta
     const { data: oferta, error: ofertaError } = await supabase
       .from('ofertas')
-      .select('id, cupones_disponibles, cantidad_limite, estado')
+      .select('id, cupones_disponibles, cantidad_limite, estado, fecha_fin')
       .eq('id', ofertaId)
+      .eq('estado', 'aprobada')
       .single()
 
-    if (ofertaError) throw ofertaError
+    if (ofertaError) {
+      throw new Error('Oferta no encontrada')
+    }
 
+    // Verificar fecha
+    const hoy = new Date()
+    const fechaFin = new Date(oferta.fecha_fin)
+    if (fechaFin < hoy) {
+      throw new Error('Esta oferta ya ha finalizado')
+    }
+
+    // Verificar stock
     if (oferta.cantidad_limite && oferta.cupones_disponibles <= 0) {
       throw new Error('Lo sentimos, esta oferta ya no tiene cupones disponibles.')
     }
 
-    // Step 2: Generate unique coupon code
-    const codigo = generarCodigo(empresaPrefijo)
+    // Step 2: Generar código único
+    const codigo = generarCodigo(empresaNombre)
 
-    // Step 3: Create compra
+    // Step 3: Crear registro de compra
     const { data: compra, error: compraError } = await supabase
       .from('compras')
       .insert({
-        cliente_id: clienteId,
+        cliente_id: user.id,
         oferta_id: ofertaId,
         cantidad: 1,
         total: precioOferta,
@@ -76,39 +138,57 @@ export const comprarCupon = async ({ ofertaId, clienteId, precioOferta, empresaP
       .select('id')
       .single()
 
-    if (compraError) throw compraError
+    if (compraError) {
+      console.error('Error al crear compra:', compraError)
+      throw new Error('Error al procesar la compra')
+    }
 
-    // Step 4: Create cupon
+    // Step 4: Crear cupón
     const { data: cupon, error: cuponError } = await supabase
       .from('cupones')
       .insert({
         codigo,
         oferta_id: ofertaId,
-        cliente_id: clienteId,
+        cliente_id: user.id,
+        compra_id: compra.id,
         precio_pagado: precioOferta,
         estado: 'disponible',
+        fecha_compra: new Date().toISOString(),
         fecha_vencimiento: fechaLimiteUso,
       })
       .select('*')
       .single()
 
-    if (cuponError) throw cuponError
+    if (cuponError) {
+      console.error('Error al crear cupón:', cuponError)
+      throw new Error('Error al generar el cupón')
+    }
 
-    // Step 5: Decrement stock (if limited)
+    // Step 5: Decrementar stock (si tiene límite)
     if (oferta.cantidad_limite) {
-      await supabase.rpc('decrementar_cupones', { oferta_uuid: ofertaId })
+      const { error: updateError } = await supabase
+        .from('ofertas')
+        .update({ 
+          cupones_disponibles: oferta.cupones_disponibles - 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', ofertaId)
+        .gt('cupones_disponibles', 0) // Condición adicional de seguridad
+
+      if (updateError) {
+        console.error('Error al actualizar stock:', updateError)
+        // No fallamos aquí, el cupón ya fue creado
+      }
     }
 
     return { data: cupon, error: null }
   } catch (error) {
-    console.error('Error al comprar cupón:', error)
+    console.error('Error en comprarCuponDirecto:', error)
     return { data: null, error }
   }
 }
 
-/**
- * Get a single coupon by ID (for PDF/detail view)
- */
+
 export const getCuponPorId = async (cuponId) => {
   try {
     const { data, error } = await supabase
@@ -118,38 +198,49 @@ export const getCuponPorId = async (cuponId) => {
         oferta:oferta_id (
           titulo,
           imagen_url,
-          empresa_nombre,
-          empresa_direccion,
+          precio_regular,
+          porcentaje_descuento,
           otros_detalles,
-          fecha_limite_uso
+          fecha_limite_uso,
+          empresa:empresa_id (
+            nombre,
+            direccion
+          )
         )
       `)
       .eq('id', cuponId)
       .single()
 
     if (error) throw error
-    return { data, error: null }
+
+    // Transformar para compatibilidad
+    const cuponTransformado = {
+      ...data,
+      oferta: data.oferta ? {
+        ...data.oferta,
+        empresa_nombre: data.oferta.empresa?.nombre || 'Empresa',
+        empresa_direccion: data.oferta.empresa?.direccion || ''
+      } : null
+    }
+
+    return { data: cuponTransformado, error: null }
   } catch (error) {
     return { data: null, error }
   }
 }
 
-// ── Helpers ──────────────────────────────────────────────
 
-/**
- * Generates a coupon code: "PREFIX-XXXXXXX"
- * PREFIX = first 3 letters of empresa name, uppercased
- * XXXXXXX = 7 random digits
- */
-const generarCodigo = (empresaPrefijo = 'CUP') => {
-  const prefijo = empresaPrefijo.slice(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X')
+const generarCodigo = (empresaNombre = 'CUP') => {
+  const prefijo = empresaNombre
+    .slice(0, 3)
+    .toUpperCase()
+    .replace(/[^A-Z]/g, 'X')
+    .padEnd(3, 'X')
   const numeros = String(Math.floor(Math.random() * 9999999)).padStart(7, '0')
   return `${prefijo}-${numeros}`
 }
 
-/**
- * Categorize coupons by status — used in MisCuponesPage
- */
+
 export const categorizarCupones = (cupones = []) => {
   const hoy = new Date()
   hoy.setHours(0, 0, 0, 0)
@@ -162,7 +253,7 @@ export const categorizarCupones = (cupones = []) => {
       if (cupon.estado === 'canjeado') {
         acc.canjeados.push(cupon)
       } else if (vencimiento < hoy || cupon.estado === 'vencido') {
-        acc.vencidos.push(cupon)
+        acc.vencidos.push({ ...cupon, estado: 'vencido' })
       } else {
         acc.disponibles.push(cupon)
       }

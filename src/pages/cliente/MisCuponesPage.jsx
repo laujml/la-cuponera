@@ -1,8 +1,9 @@
 // src/pages/cliente/MisCuponesPage.jsx
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { getMisCupones, categorizarCupones } from '../../services/cuponesService'
 import CuponCard from '../../components/cupones/CuponCard'
-import { FiTag, FiCheckCircle, FiClock, FiAlertCircle } from 'react-icons/fi'
+import { FiTag, FiCheckCircle, FiClock, FiAlertCircle, FiShoppingBag } from 'react-icons/fi'
 
 const TABS = [
   { key: 'disponibles', label: 'Disponibles', icono: <FiTag />, color: 'text-green-600' },
@@ -23,7 +24,9 @@ const MisCuponesPage = () => {
   const cargarCupones = async () => {
     setCargando(true)
     setError(null)
+    
     const { data, error: err } = await getMisCupones()
+    
     if (err) {
       setError('No se pudieron cargar tus cupones.')
     } else {
@@ -41,7 +44,10 @@ const MisCuponesPage = () => {
 
         {/* Page header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Mis cupones</h1>
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <FiShoppingBag className="text-orange-500" />
+            Mis cupones
+          </h1>
           <p className="text-gray-500 text-sm mt-1">
             {totalCupones === 0
               ? 'Aún no tienes cupones. ¡Compra uno!'
@@ -65,7 +71,7 @@ const MisCuponesPage = () => {
                 }`}
               >
                 {tab.icono}
-                {tab.label}
+                <span className="hidden sm:inline">{tab.label}</span>
                 {count > 0 && (
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
                     activa ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
@@ -85,7 +91,8 @@ const MisCuponesPage = () => {
               <div key={i} className="bg-white rounded-xl shadow-md p-4 animate-pulse">
                 <div className="h-36 bg-gray-200 rounded-lg mb-4" />
                 <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
+                <div className="h-10 bg-gray-200 rounded" />
               </div>
             ))}
           </div>
@@ -108,22 +115,31 @@ const MisCuponesPage = () => {
         {/* Empty state */}
         {!cargando && !error && cuponesActuales.length === 0 && (
           <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-            <div className="text-gray-300 text-6xl mb-4">🎟️</div>
+            <div className="text-6xl mb-4">
+              {tabActiva === 'disponibles' && '🎟️'}
+              {tabActiva === 'canjeados' && '✅'}
+              {tabActiva === 'vencidos' && '⏰'}
+            </div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              No tienes cupones {tabActiva}
+              {tabActiva === 'disponibles' && 'No tienes cupones disponibles'}
+              {tabActiva === 'canjeados' && 'No has canjeado ningún cupón'}
+              {tabActiva === 'vencidos' && 'No tienes cupones vencidos'}
             </h3>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm mb-6">
               {tabActiva === 'disponibles'
                 ? 'Explora las ofertas y compra tu primer cupón.'
-                : `Aún no hay cupones en esta categoría.`}
+                : tabActiva === 'canjeados'
+                  ? 'Cuando canjees un cupón, aparecerá aquí.'
+                  : 'Los cupones que expiren aparecerán en esta sección.'}
             </p>
             {tabActiva === 'disponibles' && (
-              <a
-                href="/"
-                className="inline-block mt-5 bg-orange-500 text-white px-5 py-2.5 rounded-lg hover:bg-orange-600 transition text-sm font-medium"
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition font-medium"
               >
+                <FiTag />
                 Ver ofertas
-              </a>
+              </Link>
             )}
           </div>
         )}
@@ -134,6 +150,18 @@ const MisCuponesPage = () => {
             {cuponesActuales.map((cupon) => (
               <CuponCard key={cupon.id} cupon={cupon} />
             ))}
+          </div>
+        )}
+
+        {/* Refresh button */}
+        {!cargando && !error && totalCupones > 0 && (
+          <div className="text-center mt-8">
+            <button
+              onClick={cargarCupones}
+              className="text-sm text-gray-500 hover:text-orange-600 transition"
+            >
+              ↻ Actualizar cupones
+            </button>
           </div>
         )}
       </div>

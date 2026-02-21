@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 
@@ -32,8 +33,24 @@ function App() {
         <Toaster 
           position="top-right"
           toastOptions={{
-            duration: 3000,
-            style: { background: '#363636', color: '#fff' },
+            duration: 4000,
+            style: { 
+              background: '#363636', 
+              color: '#fff',
+              borderRadius: '10px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
+              },
+            },
           }}
         />
 
@@ -50,7 +67,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/ofertas/:id" element={<OfertaDetallePage />} />
 
-            {/* Cliente */}
+            {/* Cliente - Rutas protegidas */}
             <Route 
               path="/mis-cupones" 
               element={
@@ -72,11 +89,14 @@ function App() {
             <Route 
               path="*" 
               element={
-                <div className="min-h-screen flex items-center justify-center">
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
                   <div className="text-center">
                     <h1 className="text-6xl font-bold text-gray-300">404</h1>
-                    <p className="text-gray-600 mt-2">Página no encontrada</p>
-                    <a href="/" className="text-orange-500 hover:underline mt-4 inline-block">
+                    <p className="text-gray-600 mt-2 mb-4">Página no encontrada</p>
+                    <a 
+                      href="/" 
+                      className="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition"
+                    >
                       Volver al inicio
                     </a>
                   </div>

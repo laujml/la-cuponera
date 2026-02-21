@@ -37,15 +37,18 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white rounded-t-2xl">
           <div className="flex items-center gap-2">
             <FiLock className="text-green-500" />
             <h2 className="text-lg font-bold text-gray-800">Pago seguro</h2>
           </div>
-          <button onClick={onCancelar} className="text-gray-400 hover:text-gray-600">
+          <button 
+            onClick={onCancelar} 
+            className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-full transition"
+          >
             <FiX className="text-xl" />
           </button>
         </div>
@@ -53,7 +56,7 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
         {/* Order summary */}
         <div className="mx-6 mt-4 bg-orange-50 rounded-xl p-4">
           <p className="text-sm text-gray-600 mb-1 font-medium">Resumen del pedido</p>
-          <p className="font-semibold text-gray-800 text-sm">{oferta.titulo}</p>
+          <p className="font-semibold text-gray-800 text-sm line-clamp-2">{oferta.titulo}</p>
           <p className="text-xs text-gray-500">{oferta.empresa_nombre}</p>
           <div className="flex justify-between items-end mt-3">
             <div>

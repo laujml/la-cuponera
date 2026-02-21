@@ -1,4 +1,4 @@
-
+// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../config/supabaseClient'
 import { obtenerPerfil } from '../services/authService'
@@ -10,14 +10,27 @@ export const AuthProvider = ({ children }) => {
   const [perfil, setPerfil] = useState(null)     // Our perfiles row (has rol)
   const [cargando, setCargando] = useState(true) // Initial session check
 
-  
   const cargarPerfil = async (user) => {
     if (!user) {
       setPerfil(null)
       return
     }
-    const { data } = await obtenerPerfil(user.id)
-    setPerfil(data)
+    
+    const { data, error } = await obtenerPerfil(user.id)
+    
+    if (error) {
+      console.warn('Error al cargar perfil:', error)
+      // Si no hay perfil, crear uno básico con datos del usuario
+      setPerfil({
+        id: user.id,
+        email: user.email,
+        nombre: user.user_metadata?.nombre || 'Usuario',
+        apellido: user.user_metadata?.apellido || '',
+        rol: user.user_metadata?.rol || 'cliente',
+      })
+    } else {
+      setPerfil(data)
+    }
   }
 
   useEffect(() => {
@@ -44,6 +57,7 @@ export const AuthProvider = ({ children }) => {
   const esCliente = perfil?.rol === 'cliente'
   const esAdminEmpresa = perfil?.rol === 'admin_empresa'
   const esAdministrador = perfil?.rol === 'administrador'
+  const esEmpleado = perfil?.rol === 'empleado'
   const estaAutenticado = !!usuario
 
   const value = {
@@ -54,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     esCliente,
     esAdminEmpresa,
     esAdministrador,
+    esEmpleado,
     refrescarPerfil: () => cargarPerfil(usuario),
   }
 
