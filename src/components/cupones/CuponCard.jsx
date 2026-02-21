@@ -1,4 +1,4 @@
-// src/components/cupones/CuponCard.jsx
+
 import { FiCalendar, FiMapPin, FiDownload, FiCheckCircle, FiClock } from 'react-icons/fi'
 import { generarPDFCupon } from '../../utils/pdfCupon'
 

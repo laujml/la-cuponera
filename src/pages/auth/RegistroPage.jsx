@@ -1,4 +1,4 @@
-// src/pages/auth/RegistroPage.jsx
+
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from '../../hooks/useForm'
@@ -24,7 +24,7 @@ const RegistroPage = () => {
     }
   )
 
-  // Auto-format DUI: 00000000-0
+
   const handleDuiChange = (e) => {
     let raw = e.target.value.replace(/\D/g, '').slice(0, 9)
     if (raw.length > 8) {
@@ -33,7 +33,7 @@ const RegistroPage = () => {
     handleChange({ target: { name: 'dui', value: raw } })
   }
 
-  // Auto-format phone: 0000-0000
+
   const handleTelefonoChange = (e) => {
     let raw = e.target.value.replace(/\D/g, '').slice(0, 8)
     if (raw.length > 4) {

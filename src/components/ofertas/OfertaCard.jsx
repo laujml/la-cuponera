@@ -1,4 +1,4 @@
-// src/components/ofertas/OfertaCard.jsx
+
 import { Link } from 'react-router-dom'
 import { FiMapPin, FiClock, FiTag } from 'react-icons/fi'
 

@@ -1,4 +1,4 @@
-// src/pages/NoAutorizadoPage.jsx
+
 import { Link } from 'react-router-dom'
 import { FiAlertTriangle, FiHome } from 'react-icons/fi'
 

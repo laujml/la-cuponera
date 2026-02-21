@@ -1,4 +1,4 @@
-// src/components/ofertas/FiltroRubros.jsx
+
 import { useState, useEffect } from 'react'
 import { getRubros } from '../../services/ofertasService'
 import { FiGrid } from 'react-icons/fi'

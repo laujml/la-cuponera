@@ -1,4 +1,4 @@
-// src/pages/auth/RecuperarContrasenaPage.jsx
+
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from '../../hooks/useForm'

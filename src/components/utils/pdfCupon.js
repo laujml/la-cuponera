@@ -1,9 +1,4 @@
-// src/utils/pdfCupon.js
-/**
- * Generates a printable coupon HTML page and opens it in a new tab.
- * The user can then use browser Print → Save as PDF.
- * No external PDF library needed.
- */
+
 export const generarPDFCupon = (cupon) => {
   const oferta = cupon.oferta || {}
   const ahorro = ((oferta.precio_regular || 0) - (cupon.precio_pagado || 0)).toFixed(2)

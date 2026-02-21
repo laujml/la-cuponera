@@ -1,4 +1,4 @@
-// src/components/cupones/ModalExito.jsx
+
 import { FiCheckCircle, FiDownload, FiShoppingBag, FiX } from 'react-icons/fi'
 import { generarPDFCupon } from '../../utils/pdfCupon'
 

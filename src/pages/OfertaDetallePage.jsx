@@ -1,4 +1,4 @@
-// src/pages/OfertaDetallePage.jsx
+
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getOfertaPorId } from '../services/ofertasService'

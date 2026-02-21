@@ -1,4 +1,4 @@
-// src/context/AuthContext.jsx
+
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../config/supabaseClient'
 import { obtenerPerfil } from '../services/authService'
@@ -6,9 +6,9 @@ import { obtenerPerfil } from '../services/authService'
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [usuario, setUsuario] = useState(null)   // Supabase auth user
-  const [perfil, setPerfil] = useState(null)     // Our perfiles row (has rol)
-  const [cargando, setCargando] = useState(true) // Initial session check
+  const [usuario, setUsuario] = useState(null)  
+  const [perfil, setPerfil] = useState(null)     
+  const [cargando, setCargando] = useState(true) 
 
   const cargarPerfil = async (user) => {
     if (!user) {

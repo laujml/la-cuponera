@@ -1,4 +1,4 @@
-// src/components/cupones/ModalPago.jsx
+
 import { useState } from 'react'
 import { FiX, FiCreditCard, FiLock, FiCheck } from 'react-icons/fi'
 import { useForm } from '../../hooks/useForm'
@@ -14,14 +14,14 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
     }
   )
 
-  // Auto-format card number as XXXX XXXX XXXX XXXX
+  
   const handleCardNumber = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 16)
     const formatted = raw.replace(/(.{4})/g, '$1 ').trim()
     handleChange({ target: { name: 'numeroTarjeta', value: formatted } })
   }
 
-  // Auto-format MM/YY
+ 
   const handleExpiry = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 4)
     const formatted = raw.length >= 3 ? `${raw.slice(0, 2)}/${raw.slice(2)}` : raw

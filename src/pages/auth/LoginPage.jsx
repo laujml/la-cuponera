@@ -1,4 +1,4 @@
-// src/pages/auth/LoginPage.jsx
+
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from '../../hooks/useForm'

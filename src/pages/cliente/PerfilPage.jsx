@@ -1,4 +1,4 @@
-// src/pages/cliente/PerfilPage.jsx
+
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../config/supabaseClient'

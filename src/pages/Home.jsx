@@ -1,4 +1,4 @@
-// src/pages/Home.jsx
+
 import { useState, useEffect } from 'react'
 import { getOfertasActivas, getOfertasPorRubro } from '../services/ofertasService'
 import OfertaCard from '../components/ofertas/OfertaCard'

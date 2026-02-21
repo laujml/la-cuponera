@@ -1,13 +1,10 @@
-// src/services/authService.js
+
 import { supabase } from '../config/supabaseClient'
 
-/**
- * Register a new client
- * Creates auth user + profile via trigger
- */
+
 export const registrarCliente = async ({ email, password, nombre, apellido, dui, telefono }) => {
   try {
-    // 1. Create auth user with metadata
+  
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
