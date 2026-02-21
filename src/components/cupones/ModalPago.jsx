@@ -53,7 +53,7 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
           </button>
         </div>
 
-        {/* Order summary */}
+    
         <div className="mx-6 mt-4 bg-orange-50 rounded-xl p-4">
           <p className="text-sm text-gray-600 mb-1 font-medium">Resumen del pedido</p>
           <p className="font-semibold text-gray-800 text-sm line-clamp-2">{oferta.titulo}</p>
@@ -67,10 +67,10 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
           </div>
         </div>
 
-        {/* Card form */}
+      
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
-          {/* Card number */}
+        
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Número de tarjeta
@@ -93,7 +93,6 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
             )}
           </div>
 
-          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nombre en la tarjeta
@@ -113,7 +112,7 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
             )}
           </div>
 
-          {/* Expiry + CVV */}
+         
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Vencimiento</label>
@@ -149,7 +148,7 @@ const ModalPago = ({ oferta, onConfirmar, onCancelar, procesando }) => {
             </div>
           </div>
 
-          {/* Submit */}
+          
           <button
             type="submit"
             disabled={procesando}

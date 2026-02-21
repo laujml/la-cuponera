@@ -77,11 +77,12 @@ const OfertaDetallePage = () => {
     setProcesandoCompra(true)
 
     const { data: cupon, error: err } = await comprarCuponDirecto({
-      ofertaId: oferta.id,
-      precioOferta: oferta.precio_oferta,
-      empresaNombre: oferta.empresa_nombre,
-      fechaLimiteUso: oferta.fecha_limite_uso,
-    })
+  ofertaId: oferta.id,
+  precioOferta: oferta.precio_oferta,
+  empresaNombre: oferta.empresa_nombre,
+  fechaLimiteUso: oferta.fecha_limite_uso,
+  ofertaData: oferta,
+})
 
     setProcesandoCompra(false)
 
@@ -114,7 +115,6 @@ const OfertaDetallePage = () => {
     navigate('/mis-cupones')
   }
 
-  // ── Render states ──────────────────────────────────────
 
   if (loading) {
     return (

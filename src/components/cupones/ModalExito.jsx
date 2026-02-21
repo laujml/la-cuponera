@@ -5,7 +5,6 @@ import { generarPDFCupon } from '../../utils/pdfCupon'
 const ModalExito = ({ cupon, oferta, onCerrar, onVerCupones }) => {
   
   const handleDescargar = () => {
-    // Preparar datos del cupón para el PDF
     const cuponParaPDF = {
       ...cupon,
       oferta: {

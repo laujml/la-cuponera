@@ -145,38 +145,22 @@ export const generarPDFCupon = (cupon) => {
       font-size: 11px;
     }
     .footer strong { color: white; }
-    .qr-placeholder {
-      width: 80px;
-      height: 80px;
-      background: #e5e7eb;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: #9ca3af;
-      margin: 0 auto 12px;
-    }
     @media print {
       body { background: white; padding: 0; }
       .cupon { box-shadow: none; width: 100%; max-width: 500px; margin: 0 auto; }
-      .no-print { display: none; }
     }
   </style>
 </head>
 <body>
   <div class="cupon">
-
     <div class="header">
       <h1>LA CUPONERA</h1>
       <p>Tu cupón de descuento</p>
       <div class="descuento">${oferta.porcentaje_descuento || '0'}% OFF</div>
     </div>
-
     <div class="body">
       <p class="oferta-titulo">${oferta.titulo || 'Oferta'}</p>
       <p class="empresa">📍 ${oferta.empresa_nombre || 'Establecimiento'}</p>
-
       <div class="precios">
         <div>
           <p class="precio-regular">Precio regular: $${(oferta.precio_regular || 0).toFixed(2)}</p>
@@ -184,15 +168,12 @@ export const generarPDFCupon = (cupon) => {
         </div>
         <p class="precio-oferta">$${(cupon.precio_pagado || 0).toFixed(2)}</p>
       </div>
-
       <hr class="separator" />
-
       <div class="codigo-section">
         <p class="codigo-label">Código único del cupón</p>
         <p class="codigo">${cupon.codigo}</p>
         <p class="codigo-instruccion">Presenta este código junto con tu DUI al canjear</p>
       </div>
-
       <div class="info-grid">
         <div class="info-item">
           <p class="info-label">📅 Fecha de compra</p>
@@ -203,7 +184,6 @@ export const generarPDFCupon = (cupon) => {
           <p class="info-value">${fechaVencimiento}</p>
         </div>
       </div>
-
       ${oferta.otros_detalles ? `
       <div class="condiciones">
         <p class="condiciones-title">📋 Condiciones de uso</p>
@@ -211,15 +191,12 @@ export const generarPDFCupon = (cupon) => {
       </div>
       ` : ''}
     </div>
-
     <div class="footer">
       <strong>La Cuponera</strong> — El Salvador<br>
       Cupón válido únicamente con presentación de DUI del titular
     </div>
   </div>
-
   <script>
-    // Auto-print when page loads
     window.onload = () => {
       setTimeout(() => window.print(), 500)
     }

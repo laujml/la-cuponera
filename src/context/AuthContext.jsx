@@ -10,28 +10,21 @@ export const AuthProvider = ({ children }) => {
   const [perfil, setPerfil] = useState(null)     
   const [cargando, setCargando] = useState(true) 
 
-  const cargarPerfil = async (user) => {
-    if (!user) {
-      setPerfil(null)
-      return
-    }
-    
-    const { data, error } = await obtenerPerfil(user.id)
-    
-    if (error) {
-      console.warn('Error al cargar perfil:', error)
-      // Si no hay perfil, crear uno básico con datos del usuario
-      setPerfil({
-        id: user.id,
-        email: user.email,
-        nombre: user.user_metadata?.nombre || 'Usuario',
-        apellido: user.user_metadata?.apellido || '',
-        rol: user.user_metadata?.rol || 'cliente',
-      })
-    } else {
-      setPerfil(data)
-    }
+ const cargarPerfil = async (user) => {
+  if (!user) {
+    setPerfil(null)
+    return
   }
+  
+  // Perfil básico sin llamar a la base de datos
+  setPerfil({
+    id: user.id,
+    email: user.email,
+    nombre: user.user_metadata?.nombre || 'Usuario',
+    apellido: user.user_metadata?.apellido || '',
+    rol: 'cliente',
+  })
+} 
 
   useEffect(() => {
     // 1. Check current session on mount
