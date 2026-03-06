@@ -1,163 +1,110 @@
-
 import { supabase } from '../config/supabaseClient'
 
-
-export const registrarCliente = async ({ email, password, nombre, apellido, dui, telefono }) => {
-  try {
-  
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { 
-          nombre, 
-          apellido, 
-          rol: 'cliente' 
-        },
-      },
-    })
-
-    if (error) throw error
-
-    // 2. If user was created and email confirmation is disabled, 
-    //    update DUI/phone immediately
-    if (data.user && dui) {
-      // Wait a moment for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      const { error: updateError } = await supabase
-        .from('perfiles')
-        .update({ 
-          dui, 
-          telefono,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', data.user.id)
-
-      if (updateError) {
-        console.warn('No se pudo actualizar DUI/teléfono:', updateError)
-      }
-    }
-
-    return { data, error: null }
-  } catch (error) {
-    console.error('Error en registro:', error)
-    return { data: null, error }
-  }
-}
-
 /**
- * Log in with email and password
+ * SERVICIO DE AUTENTICACIÓN UNIFICADO - FASE 2
+ * Maneja login para clientes, admin empresa y empleados
  */
-export const iniciarSesion = async ({ email, password }) => {
+
+// Login unificado (detecta automáticamente el tipo de usuario)
+export const login = async (email, password) => {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ 
-      email, 
-      password 
-    })
-    
+    const { data, error } = await supabase
+      .rpc('login_usuario', {
+        p_email: email,
+        p_password: password
+      })
+
     if (error) throw error
-    return { data, error: null }
+
+    const result = data[0]
+
+    if (result.success) {
+      // Guardar en localStorage
+      const userData = {
+        id: result.user_id,
+        type: result.user_type, // cliente, admin_empresa, o empleado
+        name: result.user_name,
+        empresaId: result.empresa_id,
+        email: email
+      }
+      localStorage.setItem('user', JSON.stringify(userData))
+      return { data: userData, error: null }
+    } else {
+      return { data: null, error: result.mensaje }
+    }
   } catch (error) {
     console.error('Error en login:', error)
-    return { data: null, error }
+    return { data: null, error: 'Error al iniciar sesión' }
   }
 }
 
-/**
- * Log out current user
- */
-export const cerrarSesion = async () => {
-  try {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    return { error: null }
-  } catch (error) {
-    console.error('Error en logout:', error)
-    return { error }
-  }
-}
-
-/**
- * Get the profile (with role) for a given user id
- */
-export const obtenerPerfil = async (userId) => {
+// Registro de cliente (mantener para compatibilidad)
+export const registrarCliente = async (clienteData) => {
   try {
     const { data, error } = await supabase
-      .from('perfiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-
-    if (error) throw error
-    return { data, error: null }
-  } catch (error) {
-    console.error('Error al obtener perfil:', error)
-    return { data: null, error }
-  }
-}
-
-/**
- * Update user profile
- */
-export const actualizarPerfil = async (userId, datos) => {
-  try {
-    const { data, error } = await supabase
-      .from('perfiles')
-      .update({
-        ...datos,
-        updated_at: new Date().toISOString()
+      .rpc('registrar_cliente', {
+        p_nombres: clienteData.nombres,
+        p_apellidos: clienteData.apellidos,
+        p_email: clienteData.email,
+        p_telefono: clienteData.telefono,
+        p_direccion: clienteData.direccion,
+        p_dui: clienteData.dui,
+        p_password: clienteData.password
       })
-      .eq('id', userId)
-      .select()
-      .single()
 
     if (error) throw error
-    return { data, error: null }
+
+    const result = data[0]
+
+    if (result.success) {
+      return { data: result, error: null }
+    } else {
+      return { data: null, error: result.mensaje }
+    }
   } catch (error) {
-    console.error('Error al actualizar perfil:', error)
-    return { data: null, error }
+    console.error('Error en registro:', error)
+    return { data: null, error: 'Error al registrar cliente' }
   }
 }
 
-/**
- * Send password reset email
- */
-export const recuperarContrasena = async (email) => {
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    if (error) throw error
-    return { error: null }
-  } catch (error) {
-    console.error('Error en recuperación:', error)
-    return { error }
-  }
+// Alias para compatibilidad con código existente
+export const iniciarSesion = login
+
+// Logout
+export const logout = () => {
+  localStorage.removeItem('user')
 }
 
-/**
- * Get current session
- */
-export const obtenerSesion = async () => {
-  try {
-    const { data: { session }, error } = await supabase.auth.getSession()
-    if (error) throw error
-    return { session, error: null }
-  } catch (error) {
-    return { session: null, error }
-  }
+// Alias para compatibilidad
+export const cerrarSesion = logout
+
+// Obtener usuario actual
+export const getCurrentUser = () => {
+  const userStr = localStorage.getItem('user')
+  return userStr ? JSON.parse(userStr) : null
 }
 
-/**
- * Get current user
- */
-export const obtenerUsuarioActual = async () => {
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser()
-    if (error) throw error
-    return { user, error: null }
-  } catch (error) {
-    return { user: null, error }
-  }
+// Alias para compatibilidad
+export const obtenerUsuarioActual = () => {
+  return { user: getCurrentUser(), error: null }
 }
+
+// Verificar si está autenticado
+export const isAuthenticated = () => {
+  return getCurrentUser() !== null
+}
+
+// Verificar rol específico
+export const hasRole = (role) => {
+  const user = getCurrentUser()
+  return user && user.type === role
+}
+
+// Verificar si es cliente
+export const isCliente = () => hasRole('cliente')
+
+// Verificar si es admin de empresa
+export const isAdminEmpresa = () => hasRole('admin_empresa')
+
+// Verificar si es empleado
+export const isEmpleado = () => hasRole('empleado')
