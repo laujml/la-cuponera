@@ -26,6 +26,7 @@ import PerfilPage from './pages/cliente/PerfilPage'
 import DashboardEmpresaPage from './pages/empresa/DashboardEmpresaPage'
 import NuevaOfertaPage from './pages/empresa/NuevaOfertaPage'
 import GestionEmpleadosPage from './pages/empresa/GestionEmpleadosPage'
+import EditarOfertaPage from './pages/empresa/EditarOfertaPage'
 
 // Páginas de empleado
 import CanjeCuponesPage from './pages/empleado/CanjeCuponesPage'
@@ -118,6 +119,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+  path="/dashboard-empresa/editar-oferta/:id"
+  element={
+    <ProtectedRoute roles={[ROLES.ADMIN_EMPRESA]}>
+      <EditarOfertaPage />
+    </ProtectedRoute>
+  }
+/>
 
             {/* ── EMPLEADO ── */}
             <Route

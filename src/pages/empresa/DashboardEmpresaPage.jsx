@@ -5,20 +5,17 @@ import { useAuth } from '../../context/AuthContext'
 import { getOfertasEmpresa, getMetricasEmpresa } from '../../services/empresaService'
 import { ESTADOS_OFERTA } from '../../config/constants'
 
-// Configuración visual de cada estado
 const TABS = [
-  { key: 'en_espera',   label: 'En espera de aprobación', color: 'text-yellow-600', dot: 'bg-yellow-400', badge: 'bg-yellow-100 text-yellow-700' },
-  { key: 'aprobada',    label: 'Aprobadas futuras',        color: 'text-blue-600',   dot: 'bg-blue-400',   badge: 'bg-blue-100 text-blue-700'     },
-  { key: 'activa',      label: 'Ofertas activas',          color: 'text-green-600',  dot: 'bg-green-500',  badge: 'bg-green-100 text-green-700'   },
-  { key: 'pasada',      label: 'Ofertas pasadas',          color: 'text-gray-500',   dot: 'bg-gray-400',   badge: 'bg-gray-100 text-gray-600'     },
-  { key: 'rechazada',   label: 'Ofertas rechazadas',       color: 'text-red-600',    dot: 'bg-red-500',    badge: 'bg-red-100 text-red-700'       },
-  { key: 'descartada',  label: 'Ofertas descartadas',      color: 'text-orange-600', dot: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700' },
+  { key: 'en_espera',  label: 'En espera de aprobación', color: 'text-yellow-600', dot: 'bg-yellow-400', badge: 'bg-yellow-100 text-yellow-700' },
+  { key: 'aprobada',   label: 'Aprobadas futuras',        color: 'text-blue-600',   dot: 'bg-blue-400',   badge: 'bg-blue-100 text-blue-700'     },
+  { key: 'activa',     label: 'Ofertas activas',          color: 'text-green-600',  dot: 'bg-green-500',  badge: 'bg-green-100 text-green-700'   },
+  { key: 'pasada',     label: 'Ofertas pasadas',          color: 'text-gray-500',   dot: 'bg-gray-400',   badge: 'bg-gray-100 text-gray-600'     },
+  { key: 'rechazada',  label: 'Ofertas rechazadas',       color: 'text-red-600',    dot: 'bg-red-500',    badge: 'bg-red-100 text-red-700'       },
+  { key: 'descartada', label: 'Ofertas descartadas',      color: 'text-orange-600', dot: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700' },
 ]
 
-// Helper: clasificar oferta según fechas y estado BD 
 const clasificarOferta = (oferta) => {
-  const hoy = new Date()
-  hoy.setHours(0, 0, 0, 0)
+  const hoy   = new Date(); hoy.setHours(0, 0, 0, 0)
   const inicio = new Date(oferta.fecha_inicio)
   const fin    = new Date(oferta.fecha_fin)
 
@@ -26,10 +23,9 @@ const clasificarOferta = (oferta) => {
   if (oferta.estado === ESTADOS_OFERTA.DESCARTADA) return 'descartada'
   if (oferta.estado === ESTADOS_OFERTA.EN_ESPERA)  return 'en_espera'
 
-  // Si está aprobada, ver si es futura, activa o pasada según fechas
   if (oferta.estado === ESTADOS_OFERTA.APROBADA) {
-    if (inicio > hoy)  return 'aprobada' // futura
-    if (fin   < hoy)   return 'pasada'
+    if (inicio > hoy) return 'aprobada'
+    if (fin   < hoy)  return 'pasada'
     return 'activa'
   }
 
@@ -40,28 +36,23 @@ export default function DashboardEmpresaPage() {
   const navigate = useNavigate()
   const { perfil } = useAuth()
 
-  const [tabActiva, setTabActiva]     = useState('activa')
-  const [ofertas, setOfertas]         = useState([])
-  const [metricas, setMetricas]       = useState(null)
-  const [cargando, setCargando]       = useState(true)
+  const [tabActiva, setTabActiva]               = useState('activa')
+  const [ofertas, setOfertas]                   = useState([])
+  const [metricas, setMetricas]                 = useState(null)
+  const [cargando, setCargando]                 = useState(true)
   const [cargandoMetricas, setCargandoMetricas] = useState(true)
 
-  // Cargar ofertas 
   useEffect(() => {
     const cargar = async () => {
       setCargando(true)
       const { data, error } = await getOfertasEmpresa()
-      if (error) {
-        toast.error('Error al cargar las ofertas')
-      } else {
-        setOfertas(data ?? [])
-      }
+      if (error) toast.error('Error al cargar las ofertas')
+      else setOfertas(data ?? [])
       setCargando(false)
     }
     cargar()
   }, [])
 
-  // Cargar métricas
   useEffect(() => {
     const cargar = async () => {
       setCargandoMetricas(true)
@@ -72,7 +63,6 @@ export default function DashboardEmpresaPage() {
     cargar()
   }, [])
 
-  // Clasificar ofertas por tab 
   const ofertasPorTab = TABS.reduce((acc, tab) => {
     acc[tab.key] = ofertas.filter(o => clasificarOferta(o) === tab.key)
     return acc
@@ -83,20 +73,14 @@ export default function DashboardEmpresaPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── HEADER ── */}
       <div
         className="text-white py-8 px-6 shadow"
         style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' }}
       >
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-black tracking-tight">
-            ADMINISTRADOR de la empresa
-          </h1>
-          <p className="text-orange-100 mt-1 text-sm">
-            Bienvenido, {perfil?.nombre}
-          </p>
+          <h1 className="text-3xl font-black tracking-tight">ADMINISTRADOR de la empresa</h1>
+          <p className="text-orange-100 mt-1 text-sm">Bienvenido, {perfil?.nombre}</p>
 
-          {/* Botones de acción */}
           <div className="flex flex-wrap gap-3 mt-5">
             <button
               onClick={() => navigate('/dashboard-empresa/nueva-oferta')}
@@ -108,18 +92,17 @@ export default function DashboardEmpresaPage() {
               onClick={() => navigate('/dashboard-empresa/empleados')}
               className="bg-white/20 hover:bg-white/30 text-white font-bold px-5 py-2 rounded-full text-sm border border-white/40 transition"
             >
-              Gestión de empleados
+              Gestion de empleados
             </button>
           </div>
 
-          {/* Métricas rápidas */}
           {!cargandoMetricas && metricas && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
               {[
                 { label: 'Ofertas activas',  value: metricas.ofertasActivas },
                 { label: 'Cupones vendidos', value: metricas.totalCupones },
                 { label: 'Ingresos',         value: `$${metricas.totalIngresos.toLocaleString()}` },
-                { label: `Comisión (${metricas.porcentajeComision}%)`, value: `$${metricas.comision.toFixed(2)}` },
+                { label: `Comision (${metricas.porcentajeComision}%)`, value: `$${metricas.comision.toFixed(2)}` },
               ].map(m => (
                 <div key={m.label} className="bg-white/15 rounded-xl px-4 py-3">
                   <p className="text-white font-black text-xl">{m.value}</p>
@@ -133,7 +116,6 @@ export default function DashboardEmpresaPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
 
-        {/* ── TABS ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
           <div className="flex overflow-x-auto">
             {TABS.map(tab => {
@@ -160,7 +142,6 @@ export default function DashboardEmpresaPage() {
           </div>
         </div>
 
-        {/* ── CONTENIDO ── */}
         {cargando ? (
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500" />
@@ -168,7 +149,7 @@ export default function DashboardEmpresaPage() {
         ) : ofertasVisibles.length === 0 ? (
           <div className="text-center py-24 text-gray-400">
             <p className="text-5xl mb-3">📋</p>
-            <p className="font-semibold text-lg">No hay ofertas en esta categoría</p>
+            <p className="font-semibold text-lg">No hay ofertas en esta categoria</p>
             {tabActiva === 'en_espera' && (
               <button
                 onClick={() => navigate('/dashboard-empresa/nueva-oferta')}
@@ -181,7 +162,12 @@ export default function DashboardEmpresaPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {ofertasVisibles.map(oferta => (
-              <OfertaCard key={oferta.id} oferta={oferta} tabActiva={tabActiva} />
+              <OfertaCard
+                key={oferta.id}
+                oferta={oferta}
+                tabActiva={tabActiva}
+                porcentajeComision={metricas?.porcentajeComision ?? 15}
+              />
             ))}
           </div>
         )}
@@ -190,30 +176,28 @@ export default function DashboardEmpresaPage() {
   )
 }
 
-// ─── Tarjeta de oferta ────────────────────────────────────────────────────
-function OfertaCard({ oferta, tabActiva }) {
+function OfertaCard({ oferta, tabActiva, porcentajeComision }) {
+  const navigate = useNavigate()
   const tab = TABS.find(t => t.key === tabActiva)
   const descuento = oferta.precio_regular > 0
     ? Math.round(((oferta.precio_regular - oferta.precio_oferta) / oferta.precio_regular) * 100)
     : 0
 
+  const vendidos    = oferta.cantidad_vendida ?? 0
+  const disponibles = oferta.cantidad_limite ? oferta.cantidad_limite - vendidos : null
+  const ingresos    = vendidos * oferta.precio_oferta
+  const comision    = ingresos * ((porcentajeComision ?? 15) / 100)
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100">
-      {/* Imagen */}
       <div className="relative h-40 bg-gray-100 overflow-hidden">
         {oferta.imagen_url ? (
-          <img
-            src={oferta.imagen_url}
-            alt={oferta.titulo}
-            className="w-full h-full object-cover"
-          />
+          <img src={oferta.imagen_url} alt={oferta.titulo} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-orange-50">
             <span className="text-4xl">🏷️</span>
           </div>
         )}
-
-        {/* Badge descuento */}
         {descuento > 0 && (
           <span
             className="absolute top-2 right-2 text-white text-xs font-black px-2 py-1 rounded-full"
@@ -222,27 +206,58 @@ function OfertaCard({ oferta, tabActiva }) {
             {descuento}% OFF
           </span>
         )}
-
-        {/* Badge estado */}
         <span className={`absolute bottom-2 left-2 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 ${tab?.badge}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${tab?.dot}`} />
           {tab?.label}
         </span>
       </div>
 
-      {/* Info */}
       <div className="p-4">
         <h3 className="font-bold text-gray-800 text-sm leading-tight mb-1 line-clamp-2">
           {oferta.titulo}
         </h3>
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-3">
           <span className="text-gray-400 line-through text-xs">${oferta.precio_regular}</span>
           <span className="text-orange-500 font-black text-base">${oferta.precio_oferta}</span>
         </div>
-        <div className="flex items-center justify-between text-xs text-gray-400">
-          <span>📅 {oferta.fecha_inicio}</span>
-          <span>{oferta.cantidad_vendida ?? 0} vendidos</span>
+
+        <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-xs text-gray-600">
+          <div className="flex justify-between">
+            <span>Vendidos</span>
+            <span className="font-bold text-gray-800">{vendidos}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Disponibles</span>
+            <span className="font-bold text-gray-800">{disponibles !== null ? disponibles : 'Sin limite'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Ingresos</span>
+            <span className="font-bold text-green-600">${ingresos.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Cargo servicio ({porcentajeComision}%)</span>
+            <span className="font-bold text-orange-500">${comision.toFixed(2)}</span>
+          </div>
         </div>
+
+        <div className="text-xs text-gray-400 mt-2">{oferta.fecha_inicio}</div>
+
+        {tabActiva === 'rechazada' && (
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => navigate(`/dashboard-empresa/editar-oferta/${oferta.id}`)}
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-2 rounded-full transition"
+            >
+              Editar y reenviar
+            </button>
+            <button
+              onClick={() => navigate(`/dashboard-empresa/editar-oferta/${oferta.id}?descartar=true`)}
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold py-2 rounded-full transition"
+            >
+              Descartar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

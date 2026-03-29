@@ -15,6 +15,7 @@ const CAMPO_VACIO = {
   fecha_limite_uso: '',
   cantidad_limite:  '',
   imagen_url:       '',
+  rubro_id:         '',
 }
 
 export default function NuevaOfertaPage() {
@@ -25,7 +26,6 @@ export default function NuevaOfertaPage() {
   const [guardando, setGuardando] = useState(false)
   const [cargando, setCargando]   = useState(true)
 
-  // Cargar empresa y rubros al montar 
   useEffect(() => {
     const cargar = async () => {
       setCargando(true)
@@ -33,8 +33,8 @@ export default function NuevaOfertaPage() {
         getEmpresa(),
         getRubros(),
       ])
-      if (resEmpresa.data)  setEmpresa(resEmpresa.data)
-      if (resRubros.data)   setRubros(resRubros.data)
+      if (resEmpresa.data) setEmpresa(resEmpresa.data)
+      if (resRubros.data)  setRubros(resRubros.data)
       setCargando(false)
     }
     cargar()
@@ -42,28 +42,27 @@ export default function NuevaOfertaPage() {
 
   const set = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }))
 
-  //  Calcular descuento en tiempo real 
   const descuento = form.precio_regular && form.precio_oferta
     ? Math.round(((form.precio_regular - form.precio_oferta) / form.precio_regular) * 100)
     : null
 
-  // Validaciones básicas 
   const validar = () => {
-    if (!form.titulo.trim())         { toast.error('El título es obligatorio');                return false }
-    if (!form.descripcion.trim())    { toast.error('La descripción es obligatoria');           return false }
-    if (!form.precio_regular)        { toast.error('El precio regular es obligatorio');        return false }
-    if (!form.precio_oferta)         { toast.error('El precio de oferta es obligatorio');      return false }
+    if (!form.titulo.trim())      { toast.error('El título es obligatorio');           return false }
+    if (!form.rubro_id)           { toast.error('El rubro es obligatorio');            return false }
+    if (!form.descripcion.trim()) { toast.error('La descripción es obligatoria');      return false }
+    if (!form.precio_regular)     { toast.error('El precio regular es obligatorio');   return false }
+    if (!form.precio_oferta)      { toast.error('El precio de oferta es obligatorio'); return false }
     if (Number(form.precio_oferta) >= Number(form.precio_regular)) {
       toast.error('El precio de oferta debe ser menor al precio regular')
       return false
     }
-    if (!form.fecha_inicio)          { toast.error('La fecha de inicio es obligatoria');       return false }
-    if (!form.fecha_fin)             { toast.error('La fecha de fin es obligatoria');          return false }
+    if (!form.fecha_inicio) { toast.error('La fecha de inicio es obligatoria'); return false }
+    if (!form.fecha_fin)    { toast.error('La fecha de fin es obligatoria');    return false }
     if (form.fecha_fin < form.fecha_inicio) {
       toast.error('La fecha de fin no puede ser antes de la fecha de inicio')
       return false
     }
-    if (!form.cantidad_limite)       { toast.error('La cantidad límite es obligatoria');       return false }
+    if (!form.cantidad_limite) { toast.error('La cantidad límite es obligatoria'); return false }
     if (Number(form.cantidad_limite) <= 0) {
       toast.error('La cantidad límite debe ser mayor a 0')
       return false
@@ -71,17 +70,17 @@ export default function NuevaOfertaPage() {
     return true
   }
 
-  // Enviar formulario
   const handleSubmit = async () => {
     if (!validar()) return
 
     setGuardando(true)
     const { data, error } = await crearOferta({
       ...form,
-      precio_regular:  Number(form.precio_regular),
-      precio_oferta:   Number(form.precio_oferta),
-      cantidad_limite: Number(form.cantidad_limite),
+      precio_regular:   Number(form.precio_regular),
+      precio_oferta:    Number(form.precio_oferta),
+      cantidad_limite:  Number(form.cantidad_limite),
       fecha_limite_uso: form.fecha_limite_uso || form.fecha_fin,
+      rubro_id:         Number(form.rubro_id),
     })
 
     if (error) {
@@ -104,8 +103,6 @@ export default function NuevaOfertaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
-      {/* ── HEADER ── */}
       <div
         className="text-white py-7 px-6 shadow"
         style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' }}
@@ -119,9 +116,7 @@ export default function NuevaOfertaPage() {
           </button>
           <div>
             <h1 className="text-2xl font-black">Registro de oferta</h1>
-            <p className="text-orange-100 text-sm mt-0.5">
-              La oferta quedará en espera de aprobación
-            </p>
+            <p className="text-orange-100 text-sm mt-0.5">La oferta quedará en espera de aprobación</p>
           </div>
         </div>
       </div>
@@ -129,7 +124,6 @@ export default function NuevaOfertaPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-          {/* ── INFO DE EMPRESA (solo lectura) ── */}
           {empresa && (
             <div className="px-6 py-4 bg-orange-50 border-b border-orange-100">
               <div className="flex items-center gap-3">
@@ -150,7 +144,6 @@ export default function NuevaOfertaPage() {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-              {/* Título */}
               <div className="md:col-span-2">
                 <Campo label="Nombre de la oferta *">
                   <input
@@ -162,7 +155,21 @@ export default function NuevaOfertaPage() {
                 </Campo>
               </div>
 
-              {/* Descripción */}
+              <div className="md:col-span-2">
+                <Campo label="Rubro *">
+                  <select
+                    className={inputCls}
+                    value={form.rubro_id}
+                    onChange={e => set('rubro_id', e.target.value)}
+                  >
+                    <option value="">Selecciona un rubro...</option>
+                    {rubros.map(r => (
+                      <option key={r.id} value={r.id}>{r.nombre}</option>
+                    ))}
+                  </select>
+                </Campo>
+              </div>
+
               <div className="md:col-span-2">
                 <Campo label="Descripción *">
                   <textarea
@@ -175,7 +182,6 @@ export default function NuevaOfertaPage() {
                 </Campo>
               </div>
 
-              {/* Otros detalles */}
               <div className="md:col-span-2">
                 <Campo label="Otros detalles">
                   <textarea
@@ -188,12 +194,9 @@ export default function NuevaOfertaPage() {
                 </Campo>
               </div>
 
-              {/* Precio regular */}
               <Campo label="Precio regular ($) *">
                 <input
-                  type="number"
-                  min="0"
-                  step="0.01"
+                  type="number" min="0" step="0.01"
                   className={inputCls}
                   value={form.precio_regular}
                   onChange={e => set('precio_regular', e.target.value)}
@@ -201,19 +204,15 @@ export default function NuevaOfertaPage() {
                 />
               </Campo>
 
-              {/* Precio oferta */}
               <Campo label="Precio de oferta ($) *">
                 <div className="relative">
                   <input
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="number" min="0" step="0.01"
                     className={inputCls}
                     value={form.precio_oferta}
                     onChange={e => set('precio_oferta', e.target.value)}
                     placeholder="0.00"
                   />
-                  {/* Badge descuento en tiempo real */}
                   {descuento !== null && descuento > 0 && (
                     <span
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-white text-xs font-black px-2 py-0.5 rounded-full"
@@ -225,44 +224,25 @@ export default function NuevaOfertaPage() {
                 </div>
               </Campo>
 
-              {/* Fecha inicio */}
               <Campo label="Fecha de inicio *">
-                <input
-                  type="date"
-                  className={inputCls}
-                  value={form.fecha_inicio}
-                  onChange={e => set('fecha_inicio', e.target.value)}
-                />
+                <input type="date" className={inputCls} value={form.fecha_inicio}
+                  onChange={e => set('fecha_inicio', e.target.value)} />
               </Campo>
 
-              {/* Fecha fin */}
               <Campo label="Fecha de fin *">
-                <input
-                  type="date"
-                  className={inputCls}
-                  value={form.fecha_fin}
-                  onChange={e => set('fecha_fin', e.target.value)}
-                />
+                <input type="date" className={inputCls} value={form.fecha_fin}
+                  onChange={e => set('fecha_fin', e.target.value)} />
               </Campo>
 
-              {/* Fecha límite de uso */}
               <Campo label="Fecha límite de uso">
-                <input
-                  type="date"
-                  className={inputCls}
-                  value={form.fecha_limite_uso}
-                  onChange={e => set('fecha_limite_uso', e.target.value)}
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Si no se indica, se usará la fecha de fin
-                </p>
+                <input type="date" className={inputCls} value={form.fecha_limite_uso}
+                  onChange={e => set('fecha_limite_uso', e.target.value)} />
+                <p className="text-xs text-gray-400 mt-1">Si no se indica, se usará la fecha de fin</p>
               </Campo>
 
-              {/* Cantidad límite */}
               <Campo label="Cantidad límite de cupones *">
                 <input
-                  type="number"
-                  min="1"
+                  type="number" min="1"
                   className={inputCls}
                   value={form.cantidad_limite}
                   onChange={e => set('cantidad_limite', e.target.value)}
@@ -270,7 +250,6 @@ export default function NuevaOfertaPage() {
                 />
               </Campo>
 
-              {/* URL imagen */}
               <div className="md:col-span-2">
                 <Campo label="URL de imagen">
                   <input
@@ -284,7 +263,6 @@ export default function NuevaOfertaPage() {
 
             </div>
 
-            {/* ── BOTONES ── */}
             <div className="flex flex-col sm:flex-row gap-3 mt-7 justify-end">
               <button
                 onClick={() => navigate('/dashboard-empresa')}
@@ -313,7 +291,6 @@ export default function NuevaOfertaPage() {
   )
 }
 
-//Helpers UI 
 function Campo({ label, children }) {
   return (
     <div>

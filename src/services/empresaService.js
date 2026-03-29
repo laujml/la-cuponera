@@ -118,6 +118,59 @@ export const descartarOferta = async (ofertaId) => {
   }
 }
 
+export const getOfertaPorId = async (ofertaId) => {
+  try {
+    const empresaId = getEmpresaId()
+    if (!empresaId) throw new Error('No se encontró empresa asociada')
+
+    const { data, error } = await supabase
+      .from('ofertas')
+      .select('*')
+      .eq('id', ofertaId)
+      .eq('empresa_id', empresaId)
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    console.error('Error al obtener oferta:', error)
+    return { data: null, error }
+  }
+}
+
+export const actualizarOferta = async (ofertaId, ofertaData) => {
+  try {
+    const empresaId = getEmpresaId()
+    if (!empresaId) throw new Error('No se encontró empresa asociada')
+
+    const { data, error } = await supabase
+      .from('ofertas')
+      .update({
+        titulo:           ofertaData.titulo,
+        descripcion:      ofertaData.descripcion,
+        otros_detalles:   ofertaData.otros_detalles ?? null,
+        precio_regular:   ofertaData.precio_regular,
+        precio_oferta:    ofertaData.precio_oferta,
+        fecha_inicio:     ofertaData.fecha_inicio,
+        fecha_fin:        ofertaData.fecha_fin,
+        fecha_limite_uso: ofertaData.fecha_limite_uso ?? ofertaData.fecha_fin,
+        cantidad_limite:  ofertaData.cantidad_limite,
+        imagen_url:       ofertaData.imagen_url ?? null,
+        rubro_id:         ofertaData.rubro_id ?? null,
+        estado:           'en_espera',
+      })
+      .eq('id', ofertaId)
+      .eq('empresa_id', empresaId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    console.error('Error al actualizar oferta:', error)
+    return { data: null, error }
+  }
+}
 
 //  EMPLEADOS
 /**

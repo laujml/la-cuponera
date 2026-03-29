@@ -89,7 +89,7 @@ export const canjearCupon = async (codigo, dui) => {
     }
 
     // 4. Verificar que la oferta pertenezca a esta empresa
-    if (cupon.oferta?.empresa_id !== empresaId) {
+   if (Number(cupon.oferta?.empresa_id) !== Number(empresaId)) {
       return { data: null, error: 'Este cupón no corresponde a tu empresa.' }
     }
 
