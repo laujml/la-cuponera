@@ -8,13 +8,14 @@ const ProtectedRoute = ({ children, roles = [] }) => {
   const location = useLocation()
 
   
-  if (cargando) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500" />
-      </div>
-    )
-  }
+ if (roles.length > 0 && !roles.includes(perfil?.rol)) {
+  const destino = 
+    perfil?.rol === 'empleado'      ? '/canje-cupones' :
+    perfil?.rol === 'admin_empresa' ? '/dashboard-empresa' :
+    perfil?.rol === 'administrador' ? '/dashboard-admin' :
+    '/no-autorizado'
+  return <Navigate to={destino} replace />
+}
 
   
   if (!estaAutenticado) {

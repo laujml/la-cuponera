@@ -28,6 +28,13 @@ export default function CanjeCuponesPage() {
       return
     }
 
+     const formatoCupon = /^[A-Z0-9]+-[A-Z0-9]+$/
+  if (!formatoCupon.test(codigo.trim())) {
+    setErrorMsg('El formato del código no es válido. Ejemplo: CUP-944AFC7E')
+    setEstado(ESTADO.ERROR)
+    return
+  }
+
     setEstado(ESTADO.LOADING)
     setErrorMsg('')
     setCupon(null)

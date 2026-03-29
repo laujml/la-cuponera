@@ -148,7 +148,7 @@ export default function DashboardEmpresaPage() {
           </div>
         ) : ofertasVisibles.length === 0 ? (
           <div className="text-center py-24 text-gray-400">
-            <p className="text-5xl mb-3">📋</p>
+            <p className="text-5xl mb-3"></p>
             <p className="font-semibold text-lg">No hay ofertas en esta categoria</p>
             {tabActiva === 'en_espera' && (
               <button
@@ -195,7 +195,7 @@ function OfertaCard({ oferta, tabActiva, porcentajeComision }) {
           <img src={oferta.imagen_url} alt={oferta.titulo} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-orange-50">
-            <span className="text-4xl">🏷️</span>
+            <span className="text-4xl"></span>
           </div>
         )}
         {descuento > 0 && (
